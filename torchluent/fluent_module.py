@@ -92,7 +92,7 @@ class InitListModule(nn.Module):
         self.include_first = include_first
 
     def forward(self, x):
-        return x, [x] if self.include_first else x, []
+        return (x, [x]) if self.include_first else (x, [])
 
     def extra_repr(self):
         return f'include_first={self.include_first}'
