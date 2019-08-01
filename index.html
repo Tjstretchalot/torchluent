@@ -150,6 +150,106 @@
 <h1>torchluent<a class="headerlink" href="#torchluent" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
+<span class="target" id="module-torchluent"></span><p>Contains the FluentModule, which is the main interface for torchluent</p>
+<dl class="class">
+<dt id="torchluent.FluentModule">
+<em class="property">class </em><code class="sig-prename descclassname">torchluent.</code><code class="sig-name descname">FluentModule</code><span class="sig-paren">(</span><em class="sig-param">shape: Tuple[int]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent.html#FluentModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.FluentModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>This constructs torch modules in a fluent-style interface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchluent</span> <span class="kn">import</span> <span class="n">FluentModule</span>
+<span class="n">net</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">FluentModule</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">operator</span><span class="p">(</span><span class="s1">&#39;ReLU&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">operator</span><span class="p">(</span><span class="s1">&#39;ReLU&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequence</strong> (<em>list</em><em>[</em><em>nn.Module</em><em>]</em>) – the actual sequence of modules that
+we have constructed so far.</p></li>
+<li><p><strong>shape</strong> (<em>tuple</em><em>[</em><em>int</em><em>]</em>) – the current feature shape</p></li>
+<li><p><strong>is_verbose</strong> (<em>bool</em>) – if we are currently outputting each function call and
+the corresponding effects</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="torchluent.FluentModule.build">
+<code class="sig-name descname">build</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; torch.nn.modules.module.Module<a class="reference internal" href="_modules/torchluent.html#FluentModule.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.FluentModule.build" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs the actual torch module created through other invocations
+to this instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a ready-to-use torch module</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>nn.Module</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.FluentModule.dense">
+<code class="sig-name descname">dense</code><span class="sig-paren">(</span><em class="sig-param">out_features: int</em>, <em class="sig-param">bias: bool = True</em><span class="sig-paren">)</span> &#x2192; torchluent.FluentModule<a class="reference internal" href="_modules/torchluent.html#FluentModule.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.FluentModule.dense" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dense layer, also known as a linear layer or a fully connected
+layer. A dense layer requires that this already be in flattened
+form, i.e., len(self.shape) == 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>out_features</strong> (<em>int</em>) – the number of neurons to project to</p></li>
+<li><p><strong>bias</strong> (<em>bool</em>) – determines if a bias (additive) term is applied to each
+of the output features</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#torchluent.FluentModule" title="torchluent.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.FluentModule.silent">
+<code class="sig-name descname">silent</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; torchluent.FluentModule<a class="reference internal" href="_modules/torchluent.html#FluentModule.silent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.FluentModule.silent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disables verbose mode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.FluentModule" title="torchluent.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.FluentModule.verbose">
+<code class="sig-name descname">verbose</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; torchluent.FluentModule<a class="reference internal" href="_modules/torchluent.html#FluentModule.verbose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.FluentModule.verbose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Turns on verbose mode, which cases this to output every function
+call and the resulting shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.FluentModule" title="torchluent.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 <div class="section" id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
