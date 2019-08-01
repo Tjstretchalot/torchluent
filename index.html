@@ -150,10 +150,10 @@
 <h1>torchluent<a class="headerlink" href="#torchluent" title="Permalink to this headline">¶</a></h1>
 <div class="toctree-wrapper compound">
 </div>
-<span class="target" id="module-torchluent"></span><p>Contains the FluentModule, which is the main interface for torchluent</p>
+<span class="target" id="module-torchluent.fluent_module"></span><p>Contains the FluentModule class</p>
 <dl class="class">
-<dt id="torchluent.FluentModule">
-<em class="property">class </em><code class="sig-prename descclassname">torchluent.</code><code class="sig-name descname">FluentModule</code><span class="sig-paren">(</span><em class="sig-param">shape: Tuple[int]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent.html#FluentModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.FluentModule" title="Permalink to this definition">¶</a></dt>
+<dt id="torchluent.fluent_module.FluentModule">
+<em class="property">class </em><code class="sig-prename descclassname">torchluent.fluent_module.</code><code class="sig-name descname">FluentModule</code><span class="sig-paren">(</span><em class="sig-param">shape: Tuple[int]</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule" title="Permalink to this definition">¶</a></dt>
 <dd><p>This constructs torch modules in a fluent-style interface.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Example</dt>
@@ -170,6 +170,12 @@
 <span class="p">)</span>
 </pre></div>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This modules shape and all shape arguments are in practice prefixed by
+a batch dimension. The batch dimension is not altered by any of these
+calls, including reshaping, unless otherwise specified.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Variables</dt>
 <dd class="field-odd"><ul class="simple">
@@ -178,27 +184,95 @@ we have constructed so far.</p></li>
 <li><p><strong>shape</strong> (<em>tuple</em><em>[</em><em>int</em><em>]</em>) – the current feature shape</p></li>
 <li><p><strong>is_verbose</strong> (<em>bool</em>) – if we are currently outputting each function call and
 the corresponding effects</p></li>
+<li><p><strong>wrapped</strong> (<em>bool</em>) – if we are currently storing a list of hidden states</p></li>
 </ul>
 </dd>
 </dl>
 <dl class="method">
-<dt id="torchluent.FluentModule.build">
-<code class="sig-name descname">build</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; torch.nn.modules.module.Module<a class="reference internal" href="_modules/torchluent.html#FluentModule.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.FluentModule.build" title="Permalink to this definition">¶</a></dt>
+<dt id="torchluent.fluent_module.FluentModule.build">
+<code class="sig-name descname">build</code><span class="sig-paren">(</span><em class="sig-param">with_stripped=False</em><span class="sig-paren">)</span> &#x2192; torch.nn.modules.module.Module<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.build"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.build" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs the actual torch module created through other invocations
 to this instance.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>a ready-to-use torch module</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>with_stripped</strong> (<em>bool</em>) – if True, wrap() must have been called and the
+output changes to (net, stripped_net).</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>nn.Module</p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a ready-to-use torch module</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nn.Module</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="torchluent.FluentModule.dense">
-<code class="sig-name descname">dense</code><span class="sig-paren">(</span><em class="sig-param">out_features: int</em>, <em class="sig-param">bias: bool = True</em><span class="sig-paren">)</span> &#x2192; torchluent.FluentModule<a class="reference internal" href="_modules/torchluent.html#FluentModule.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.FluentModule.dense" title="Permalink to this definition">¶</a></dt>
+<dt id="torchluent.fluent_module.FluentModule.conv1d">
+<code class="sig-name descname">conv1d</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.conv1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.conv1d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a 1d convolution to the current data. The current shape
+should be in the form (channels, length). This accepts all the same
+arguments as nn.Conv1d exception for in_channels which it will
+calculate from the current shape.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.Conv1d">torch.nn.Conv1d</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.conv2d">
+<code class="sig-name descname">conv2d</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.conv2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.conv2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a convolution to the current data. The current shape should
+be in the form (channels, height, width). This accepts all the same
+arguments as nn.Conv2d except for in_channels, which it will calculate
+from the current shape.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.Conv2d">torch.nn.Conv2d</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.conv3d">
+<code class="sig-name descname">conv3d</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.conv3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.conv3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a convolution to the current data. The current shape should
+be in the form (channels, depth, height, width). This accepts all the same
+arguments as nn.Conv3d except for in_channels, which it will calculate
+from the current shape.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.Conv3d">torch.nn.Conv3d</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.dense">
+<code class="sig-name descname">dense</code><span class="sig-paren">(</span><em class="sig-param">out_features: int</em>, <em class="sig-param">bias: bool = True</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.dense" title="Permalink to this definition">¶</a></dt>
 <dd><p>A dense layer, also known as a linear layer or a fully connected
 layer. A dense layer requires that this already be in flattened
 form, i.e., len(self.shape) == 1.</p>
@@ -214,28 +288,275 @@ of the output features</p></li>
 <dd class="field-even"><p>self</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="#torchluent.FluentModule" title="torchluent.FluentModule">FluentModule</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="torchluent.FluentModule.silent">
-<code class="sig-name descname">silent</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; torchluent.FluentModule<a class="reference internal" href="_modules/torchluent.html#FluentModule.silent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.FluentModule.silent" title="Permalink to this definition">¶</a></dt>
+<dt id="torchluent.fluent_module.FluentModule.flatten">
+<code class="sig-name descname">flatten</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.flatten"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.flatten" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshapes this such that the data has only one dimension.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The batch dimension is preserved.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.maxpool1d">
+<code class="sig-name descname">maxpool1d</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.maxpool1d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.maxpool1d" title="Permalink to this definition">¶</a></dt>
+<dd><p>The arguments and keyword arguments are identical to MaxPool1d</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.MaxPool1d">torch.nn.MaxPool1d</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.maxpool2d">
+<code class="sig-name descname">maxpool2d</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.maxpool2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.maxpool2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>The arguments and keyword arguments are identical to MaxPool2d</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.MaxPool2d">torch.nn.MaxPool2d</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.maxpool3d">
+<code class="sig-name descname">maxpool3d</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.maxpool3d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.maxpool3d" title="Permalink to this definition">¶</a></dt>
+<dd><p>The arguments and keyword arguments are identical to MaxPool3d</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://pytorch.org/docs/stable/nn.html#torch.nn.MaxPool3d">torch.nn.MaxPool3d</a></p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.operator">
+<code class="sig-name descname">operator</code><span class="sig-paren">(</span><em class="sig-param">oper</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.operator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.operator" title="Permalink to this definition">¶</a></dt>
+<dd><p>An operator is some operation which does not change the shape of the
+data. The operator may be specified as a string, in which it should be
+a module in torch.nn, or it may be the module itself which has not yet
+be initialized (i.e. ‘ReLU’ or nn.ReLU but not nn.ReLU())</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchluent</span> <span class="kn">import</span> <span class="n">FluentModule</span>
+<span class="n">net</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">FluentModule</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">operator</span><span class="p">(</span><span class="s1">&#39;LeakyReLU&#39;</span><span class="p">,</span> <span class="n">negative_slope</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>oper</strong> – the name of the operator or a callable which returns one</p></li>
+<li><p><strong>args</strong> – passed to the operator</p></li>
+<li><p><strong>kwargs</strong> – passed to the operator</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.reshape">
+<code class="sig-name descname">reshape</code><span class="sig-paren">(</span><em class="sig-param">shape: Tuple[int]</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.reshape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.reshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshapes the data to the specified shape. Must correspond to the
+same total number of features.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The batch dimension is preserved.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>shape</strong> (<em>tuple</em><em>[</em><em>int</em><em>]</em>) – the new shape for the data</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.save_state">
+<code class="sig-name descname">save_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.save_state"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.save_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores the current state into the list for the result. Requires that
+wrap() has already been called.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.silent">
+<code class="sig-name descname">silent</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.silent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.silent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Disables verbose mode</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>self</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#torchluent.FluentModule" title="torchluent.FluentModule">FluentModule</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="torchluent.FluentModule.verbose">
-<code class="sig-name descname">verbose</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; torchluent.FluentModule<a class="reference internal" href="_modules/torchluent.html#FluentModule.verbose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.FluentModule.verbose" title="Permalink to this definition">¶</a></dt>
+<dt id="torchluent.fluent_module.FluentModule.then">
+<code class="sig-name descname">then</code><span class="sig-paren">(</span><em class="sig-param">module</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.then"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.then" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies a generic torch module transformation. To determine the
+output shape, this just runs some data through the module. If the
+module is a string then it it is assumed to be the name of an
+attribute in torch.nn, and it is initialized with the specified
+arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>module</strong> – the module that should modify the data</p>
+</dd>
+<dt class="field-even">Rtype module</dt>
+<dd class="field-even"><p>union[nn.Module, str, type]</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>self</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.then_with">
+<code class="sig-name descname">then_with</code><span class="sig-paren">(</span><em class="sig-param">dims</em>, <em class="sig-param">mod</em>, <em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.then_with"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.then_with" title="Permalink to this definition">¶</a></dt>
+<dd><p>This applies the given nn.Module or string for an attribute in nn
+with the given dimensions passed as inputs. dims should either be a
+single number, which is treated like a tuple of a single element, or
+a tuple of numbers, which is treated as if each element is (i, num)
+where i is the index, or a tuple of (arg_index, num).</p>
+<p>Our current shape is injected into args such that for each pair
+(arg_index, num) in dims, args[arg_index] = self.shape[num]. This
+allows for an extremely generic interface for modules which do not have
+a dedicated function for them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">torchluent</span> <span class="kn">import</span> <span class="n">FluentModule</span>
+
+<span class="n">net</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">FluentModule</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+    <span class="o">.</span><span class="n">verbose</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">then_with</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;ConvTranspose2d&#39;</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span>
+               <span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">operator</span><span class="p">(</span><span class="s1">&#39;LeakyReLU&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">then_with</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;ConvTranspose2d&#39;</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span>
+               <span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">operator</span><span class="p">(</span><span class="s1">&#39;LeakyReLU&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">then_with</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;ConvTranspose2d&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span>
+               <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">operator</span><span class="p">(</span><span class="s1">&#39;LeakyReLU&#39;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dims</strong> – one of int, tuple[int], and tuple[tuple[int, int]]. each
+element is treated as if by (arg_index, num) where num is the
+dimension in self.shape that corresponds to args[arg_index]</p></li>
+<li><p><strong>mod</strong> – either a str (for an attribute in nn) or a callable which
+returns a module.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.transpose">
+<code class="sig-name descname">transpose</code><span class="sig-paren">(</span><em class="sig-param">dim1: int</em>, <em class="sig-param">dim2: int</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.transpose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transposes the two specified dimensions, where dimension 0 is the
+first dimension after the batch dimension (i.e., really index 0
+in self.shape).</p>
+<dl class="field-list">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p>from torchluent import FluentModule
+import torch</p>
+<p>net = FluentModule((1, 12, 24)).transpose(0, 2).build()
+inp = torch.randn((5, 1, 12, 24))
+out = net(inp)
+print(out.shape) # torch.Size[5, 12, 24, 1]</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.verbose">
+<code class="sig-name descname">verbose</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.verbose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.verbose" title="Permalink to this definition">¶</a></dt>
 <dd><p>Turns on verbose mode, which cases this to output every function
 call and the resulting shape.</p>
 <dl class="field-list simple">
@@ -243,9 +564,226 @@ call and the resulting shape.</p>
 <dd class="field-odd"><p>self</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="#torchluent.FluentModule" title="torchluent.FluentModule">FluentModule</a></p>
+<dd class="field-even"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.FluentModule.wrap">
+<code class="sig-name descname">wrap</code><span class="sig-paren">(</span><em class="sig-param">with_input: bool = False</em><span class="sig-paren">)</span> &#x2192; torchluent.fluent_module.FluentModule<a class="reference internal" href="_modules/torchluent/fluent_module.html#FluentModule.wrap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.FluentModule.wrap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the output to the form (x, arr) where an arr is a list of
+states stored in locations specified with save_state()</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>with_input</strong> (<em>bool</em>) – if True we immediately save_state()</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>self</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#torchluent.fluent_module.FluentModule" title="torchluent.fluent_module.FluentModule">FluentModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="torchluent.fluent_module.InitListModule">
+<em class="property">class </em><code class="sig-prename descclassname">torchluent.fluent_module.</code><code class="sig-name descname">InitListModule</code><span class="sig-paren">(</span><em class="sig-param">include_first: bool</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#InitListModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.InitListModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes a list of states, optionally with the state its
+passed in.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><p><strong>include_first</strong> (<em>bool</em>) – True to include x in the list, False to make
+an empty list.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="torchluent.fluent_module.InitListModule.extra_repr">
+<code class="sig-name descname">extra_repr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#InitListModule.extra_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.InitListModule.extra_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the extra representation of the module</p>
+<p>To print customized extra information, you should reimplement
+this method in your own modules. Both single-line and multi-line
+strings are acceptable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.InitListModule.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#InitListModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.InitListModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="torchluent.fluent_module.Reshape">
+<em class="property">class </em><code class="sig-prename descclassname">torchluent.fluent_module.</code><code class="sig-name descname">Reshape</code><span class="sig-paren">(</span><em class="sig-param">*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#Reshape"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.Reshape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reshapes the input to match the given shape, using view. This preserves
+the first dimension which is assumed to be the batch dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchluent</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">torchluent</span><span class="o">.</span><span class="n">Reshape</span><span class="p">(</span><span class="mi">28</span><span class="o">*</span><span class="mi">28</span><span class="p">)</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span>
+<span class="n">reshaped</span> <span class="o">=</span> <span class="n">a</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">reshaped</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="c1"># torch.Size[5, 784]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><p><strong>shape</strong> (<em>tuple</em><em>[</em><em>int</em><em>]</em>) – the new shape for the input</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="torchluent.fluent_module.Reshape.extra_repr">
+<code class="sig-name descname">extra_repr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#Reshape.extra_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.Reshape.extra_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the extra representation of the module</p>
+<p>To print customized extra information, you should reimplement
+this method in your own modules. Both single-line and multi-line
+strings are acceptable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.Reshape.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#Reshape.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.Reshape.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Changes the view of x to the desired shape</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="torchluent.fluent_module.SaveStateModule">
+<em class="property">class </em><code class="sig-prename descclassname">torchluent.fluent_module.</code><code class="sig-name descname">SaveStateModule</code><a class="reference internal" href="_modules/torchluent/fluent_module.html#SaveStateModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.SaveStateModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Stores the state into the array.</p>
+<dl class="method">
+<dt id="torchluent.fluent_module.SaveStateModule.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x_and_arr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#SaveStateModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.SaveStateModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="torchluent.fluent_module.StrippingModule">
+<em class="property">class </em><code class="sig-prename descclassname">torchluent.fluent_module.</code><code class="sig-name descname">StrippingModule</code><span class="sig-paren">(</span><em class="sig-param">child: torch.nn.modules.module.Module</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#StrippingModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.StrippingModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Strips the array from the output of the child</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><p><strong>child</strong> (<em>nn.Module</em>) – the child who we are stripping</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="torchluent.fluent_module.StrippingModule.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#StrippingModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.StrippingModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="torchluent.fluent_module.Transpose">
+<em class="property">class </em><code class="sig-prename descclassname">torchluent.fluent_module.</code><code class="sig-name descname">Transpose</code><span class="sig-paren">(</span><em class="sig-param">dim1: int</em>, <em class="sig-param">dim2: int</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#Transpose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.Transpose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transposes two dimensions. Does not effect the batch
+dimension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torchluent</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="n">transposer</span> <span class="o">=</span> <span class="n">torchluent</span><span class="o">.</span><span class="n">Transpose</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
+<span class="n">newdata</span> <span class="o">=</span> <span class="n">transposer</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">newdata</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="c1"># torch.Size[5, 50, 100]</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dim1</strong> (<em>int</em>) – the first dimension to transpose</p></li>
+<li><p><strong>dim2</strong> (<em>int</em>) – the second dimension to transpose</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="torchluent.fluent_module.Transpose.extra_repr">
+<code class="sig-name descname">extra_repr</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#Transpose.extra_repr"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.Transpose.extra_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the extra representation of the module</p>
+<p>To print customized extra information, you should reimplement
+this method in your own modules. Both single-line and multi-line
+strings are acceptable.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="torchluent.fluent_module.Transpose.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#Transpose.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.Transpose.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="torchluent.fluent_module.WrapModule">
+<em class="property">class </em><code class="sig-prename descclassname">torchluent.fluent_module.</code><code class="sig-name descname">WrapModule</code><span class="sig-paren">(</span><em class="sig-param">child: torch.nn.modules.module.Module</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#WrapModule"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.WrapModule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wraps a module which is expecting just x, passing the list through it</p>
+<dl class="field-list simple">
+<dt class="field-odd">Variables</dt>
+<dd class="field-odd"><p><strong>child</strong> (<em>nn.Module</em>) – the wrapped module</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="torchluent.fluent_module.WrapModule.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param">x_and_arr</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/torchluent/fluent_module.html#WrapModule.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#torchluent.fluent_module.WrapModule.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
 </dd></dl>
 
 </dd></dl>

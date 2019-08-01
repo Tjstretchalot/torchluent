@@ -1,0 +1,799 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>torchluent.fluent_module &mdash; torchluent 0.0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../../_static/jquery.js"></script>
+        <script type="text/javascript" src="../../_static/underscore.js"></script>
+        <script type="text/javascript" src="../../_static/doctools.js"></script>
+        <script type="text/javascript" src="../../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> torchluent
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">torchluent</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>torchluent.fluent_module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for torchluent.fluent_module</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Contains the FluentModule class&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">pytypeutils</span> <span class="k">as</span> <span class="nn">tus</span>
+<span class="kn">import</span> <span class="nn">typing</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">operator</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span>
+
+<div class="viewcode-block" id="Reshape"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.Reshape">[docs]</a><span class="k">class</span> <span class="nc">Reshape</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reshapes the input to match the given shape, using view. This preserves</span>
+<span class="sd">    the first dimension which is assumed to be the batch dimension.</span>
+
+<span class="sd">    :Example:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import torchluent</span>
+<span class="sd">        import torch</span>
+
+<span class="sd">        a = torchluent.Reshape(28*28)</span>
+
+<span class="sd">        data = torch.randn(5, 28, 28)</span>
+<span class="sd">        reshaped = a(data)</span>
+<span class="sd">        print(reshaped.shape) # torch.Size[5, 784]</span>
+
+
+<span class="sd">    :ivar tuple[int] shape: the new shape for the input</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check_listlike</span><span class="p">(</span><span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="n">args</span>
+
+<div class="viewcode-block" id="Reshape.forward"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.Reshape.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Changes the view of x to the desired shape&quot;&quot;&quot;</span>
+        <span class="n">real_new_shape</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="n">real_new_shape</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">real_new_shape</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Reshape.extra_repr"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.Reshape.extra_repr">[docs]</a>    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span></div></div>
+
+<div class="viewcode-block" id="Transpose"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.Transpose">[docs]</a><span class="k">class</span> <span class="nc">Transpose</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transposes two dimensions. Does not effect the batch</span>
+<span class="sd">    dimension.</span>
+
+<span class="sd">    :Example:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import torchluent</span>
+<span class="sd">        import torch</span>
+
+<span class="sd">        transposer = torchluent.Transpose(0, 1)</span>
+
+<span class="sd">        data = torch.randn(5, 100, 50)</span>
+<span class="sd">        newdata = transposer(data)</span>
+<span class="sd">        print(newdata.shape) # torch.Size[5, 50, 100]</span>
+
+<span class="sd">    :ivar int dim1: the first dimension to transpose</span>
+<span class="sd">    :ivar int dim2: the second dimension to transpose</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dim2</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">dim1</span><span class="o">=</span><span class="p">(</span><span class="n">dim1</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">dim2</span><span class="o">=</span><span class="p">(</span><span class="n">dim2</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">dim1</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;dim1=</span><span class="si">{dim1}</span><span class="s1"> must be nonnegative&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dim2</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;dim2=</span><span class="si">{dim2}</span><span class="s1"> must be nonnegative&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim1</span> <span class="o">=</span> <span class="n">dim1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dim2</span> <span class="o">=</span> <span class="n">dim2</span>
+
+<div class="viewcode-block" id="Transpose.forward"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.Transpose.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">tranpose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim2</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Transpose.extra_repr"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.Transpose.extra_repr">[docs]</a>    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.dim1}</span><span class="s1">, </span><span class="si">{self.dim2}</span><span class="s1">&#39;</span></div></div>
+
+<div class="viewcode-block" id="InitListModule"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.InitListModule">[docs]</a><span class="k">class</span> <span class="nc">InitListModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Initializes a list of states, optionally with the state its</span>
+<span class="sd">    passed in.</span>
+
+<span class="sd">    :ivar bool include_first: True to include x in the list, False to make</span>
+<span class="sd">        an empty list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include_first</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">include_first</span><span class="o">=</span><span class="p">(</span><span class="n">include_first</span><span class="p">,</span> <span class="nb">bool</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">include_first</span> <span class="o">=</span> <span class="n">include_first</span>
+
+<div class="viewcode-block" id="InitListModule.forward"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.InitListModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">include_first</span> <span class="k">else</span> <span class="n">x</span><span class="p">,</span> <span class="p">[]</span></div>
+
+<div class="viewcode-block" id="InitListModule.extra_repr"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.InitListModule.extra_repr">[docs]</a>    <span class="k">def</span> <span class="nf">extra_repr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">f</span><span class="s1">&#39;include_first=</span><span class="si">{self.include_first}</span><span class="s1">&#39;</span></div></div>
+
+<div class="viewcode-block" id="WrapModule"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.WrapModule">[docs]</a><span class="k">class</span> <span class="nc">WrapModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wraps a module which is expecting just x, passing the list through it</span>
+
+<span class="sd">    :ivar nn.Module child: the wrapped module</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">child</span><span class="o">=</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child</span> <span class="o">=</span> <span class="n">child</span>
+
+<div class="viewcode-block" id="WrapModule.forward"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.WrapModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_and_arr</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">x_and_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">x_and_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span></div></div>
+
+<div class="viewcode-block" id="SaveStateModule"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.SaveStateModule">[docs]</a><span class="k">class</span> <span class="nc">SaveStateModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Stores the state into the array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="SaveStateModule.forward"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.SaveStateModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_and_arr</span><span class="p">):</span>
+        <span class="n">x_and_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x_and_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">x_and_arr</span></div></div>
+
+<div class="viewcode-block" id="StrippingModule"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.StrippingModule">[docs]</a><span class="k">class</span> <span class="nc">StrippingModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Strips the array from the output of the child</span>
+
+<span class="sd">    :ivar nn.Module child: the child who we are stripping</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">child</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">child</span><span class="o">=</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">child</span> <span class="o">=</span> <span class="n">child</span>
+
+<div class="viewcode-block" id="StrippingModule.forward"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.StrippingModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">child</span><span class="p">(</span><span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div></div>
+
+<div class="viewcode-block" id="FluentModule"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule">[docs]</a><span class="k">class</span> <span class="nc">FluentModule</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This constructs torch modules in a fluent-style interface.</span>
+
+<span class="sd">    :Example:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        from torchluent import FluentModule</span>
+<span class="sd">        net = (</span>
+<span class="sd">            FluentModule(28*28)</span>
+<span class="sd">            .dense(128)</span>
+<span class="sd">            .operator(&#39;ReLU&#39;)</span>
+<span class="sd">            .dense(10)</span>
+<span class="sd">            .operator(&#39;ReLU&#39;)</span>
+<span class="sd">            .build()</span>
+<span class="sd">        )</span>
+
+<span class="sd">    .. note::</span>
+
+<span class="sd">        This modules shape and all shape arguments are in practice prefixed by</span>
+<span class="sd">        a batch dimension. The batch dimension is not altered by any of these</span>
+<span class="sd">        calls, including reshaping, unless otherwise specified.</span>
+
+<span class="sd">    :ivar list[nn.Module] sequence: the actual sequence of modules that</span>
+<span class="sd">        we have constructed so far.</span>
+
+<span class="sd">    :ivar tuple[int] shape: the current feature shape</span>
+
+<span class="sd">    :ivar bool is_verbose: if we are currently outputting each function call and</span>
+<span class="sd">        the corresponding effects</span>
+
+<span class="sd">    :ivar bool wrapped: if we are currently storing a list of hidden states</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">]):</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)))</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check_listlike</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">features</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">features</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;shape=</span><span class="si">{shape}</span><span class="s1"> must be positive&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_verbose</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="FluentModule.verbose"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.verbose">[docs]</a>    <span class="k">def</span> <span class="nf">verbose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Turns on verbose mode, which cases this to output every function</span>
+<span class="sd">        call and the resulting shape.</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_verbose</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;  </span><span class="si">{self.shape}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FluentModule.silent"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.silent">[docs]</a>    <span class="k">def</span> <span class="nf">silent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Disables verbose mode</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_verbose</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FluentModule.wrap"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.wrap">[docs]</a>    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_input</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Changes the output to the form (x, arr) where an arr is a list of</span>
+<span class="sd">        states stored in locations specified with save_state()</span>
+
+<span class="sd">        :param with_input: if True we immediately save_state()</span>
+<span class="sd">        :type with_input: bool</span>
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">with_input</span><span class="o">=</span><span class="p">(</span><span class="n">with_input</span><span class="p">,</span> <span class="nb">bool</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;already wrapped&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">InitListModule</span><span class="p">(</span><span class="n">with_input</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="k">def</span> <span class="nf">_wrap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">WrapModule</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span> <span class="k">else</span> <span class="n">mod</span>
+
+<div class="viewcode-block" id="FluentModule.save_state"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.save_state">[docs]</a>    <span class="k">def</span> <span class="nf">save_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Stores the current state into the list for the result. Requires that</span>
+<span class="sd">        wrap() has already been called.</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot save_state() without wrap()&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">SaveStateModule</span><span class="p">())</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FluentModule.dense"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.dense">[docs]</a>    <span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_features</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">bias</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;A dense layer, also known as a linear layer or a fully connected</span>
+<span class="sd">        layer. A dense layer requires that this already be in flattened</span>
+<span class="sd">        form, i.e., len(self.shape) == 1.</span>
+
+<span class="sd">        :param out_features: the number of neurons to project to</span>
+<span class="sd">        :param bias: determines if a bias (additive) term is applied to each</span>
+<span class="sd">            of the output features</span>
+<span class="sd">        :type out_features: int</span>
+<span class="sd">        :type bias: bool</span>
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">out_features</span><span class="o">=</span><span class="p">(</span><span class="n">out_features</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span>
+                  <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="n">bias</span><span class="p">,</span> <span class="nb">bool</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">out_features</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;out_features=</span><span class="si">{out_features}</span><span class="s1"> must be positive&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="n">f</span><span class="s1">&#39;cannot perform operation </span><span class="si">{self.shape}</span><span class="s1"> -&gt; dense -&gt; &#39;</span>
+                <span class="o">+</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{out_features}</span><span class="s1"> (current shape is not flat). consider &#39;</span>
+                <span class="o">+</span> <span class="s1">&#39;calling flatten() first&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">out_features</span><span class="p">,</span> <span class="n">bias</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">out_features</span><span class="p">,)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;  Linear -&gt; </span><span class="si">{self.shape}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FluentModule.reshape"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.reshape">[docs]</a>    <span class="k">def</span> <span class="nf">reshape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape</span><span class="p">:</span> <span class="n">typing</span><span class="o">.</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reshapes the data to the specified shape. Must correspond to the</span>
+<span class="sd">        same total number of features.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            The batch dimension is preserved.</span>
+
+<span class="sd">        :param shape: the new shape for the data</span>
+<span class="sd">        :type shape: tuple[int]</span>
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)))</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check_listlike</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">features</span> <span class="ow">in</span> <span class="n">shape</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">features</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;shape=</span><span class="si">{shape}</span><span class="s1"> must be positive&#39;</span><span class="p">)</span>
+
+        <span class="n">old_num_features</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">new_num_features</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">old_num_features</span> <span class="o">!=</span> <span class="n">new_num_features</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="n">f</span><span class="s1">&#39;cannot view </span><span class="si">{self.shape}</span><span class="s1"> as </span><span class="si">{shape}</span><span class="s1">: expected &#39;</span>
+                <span class="o">+</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{old_num_features}</span><span class="s1"> but got </span><span class="si">{new_num_features}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span><span class="n">Reshape</span><span class="p">(</span><span class="o">*</span><span class="n">shape</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;  Reshape -&gt; </span><span class="si">{self.shape}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FluentModule.flatten"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.flatten">[docs]</a>    <span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reshapes this such that the data has only one dimension.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            The batch dimension is preserved.</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">reduce</span><span class="p">(</span><span class="n">operator</span><span class="o">.</span><span class="n">mul</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">),))</span></div>
+
+<div class="viewcode-block" id="FluentModule.transpose"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.transpose">[docs]</a>    <span class="k">def</span> <span class="nf">transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dim2</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Transposes the two specified dimensions, where dimension 0 is the</span>
+<span class="sd">        first dimension after the batch dimension (i.e., really index 0</span>
+<span class="sd">        in self.shape).</span>
+
+<span class="sd">        :Example:</span>
+
+<span class="sd">            from torchluent import FluentModule</span>
+<span class="sd">            import torch</span>
+
+<span class="sd">            net = FluentModule((1, 12, 24)).transpose(0, 2).build()</span>
+<span class="sd">            inp = torch.randn((5, 1, 12, 24))</span>
+<span class="sd">            out = net(inp)</span>
+<span class="sd">            print(out.shape) # torch.Size[5, 12, 24, 1]</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">dim1</span><span class="o">=</span><span class="p">(</span><span class="n">dim1</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="n">dim2</span><span class="o">=</span><span class="p">(</span><span class="n">dim2</span><span class="p">,</span> <span class="nb">int</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">dim1</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">dim2</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cannot transpose </span><span class="si">{dim1}</span><span class="s1"> and </span><span class="si">{dim2}</span><span class="s1"> for &#39;</span>
+                             <span class="o">+</span> <span class="n">f</span><span class="s1">&#39;shape </span><span class="si">{self.shape}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span><span class="n">Transpose</span><span class="p">(</span><span class="n">dim1</span><span class="p">,</span> <span class="n">dim2</span><span class="p">)))</span>
+        <span class="n">newshape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">newshape</span><span class="p">[</span><span class="n">dim1</span><span class="p">]</span>
+        <span class="n">newshape</span><span class="p">[</span><span class="n">dim1</span><span class="p">]</span> <span class="o">=</span> <span class="n">newshape</span><span class="p">[</span><span class="n">dim2</span><span class="p">]</span>
+        <span class="n">newshape</span><span class="p">[</span><span class="n">dim2</span><span class="p">]</span> <span class="o">=</span> <span class="n">tmp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">newshape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;  Transpose[</span><span class="si">{dim1}</span><span class="s1">, </span><span class="si">{dim2}</span><span class="s1">] -&gt; </span><span class="si">{self.shape}</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FluentModule.operator"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.operator">[docs]</a>    <span class="k">def</span> <span class="nf">operator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oper</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;An operator is some operation which does not change the shape of the</span>
+<span class="sd">        data. The operator may be specified as a string, in which it should be</span>
+<span class="sd">        a module in torch.nn, or it may be the module itself which has not yet</span>
+<span class="sd">        be initialized (i.e. &#39;ReLU&#39; or nn.ReLU but not nn.ReLU())</span>
+
+<span class="sd">        :Example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from torchluent import FluentModule</span>
+<span class="sd">            net = (</span>
+<span class="sd">                FluentModule(28*28)</span>
+<span class="sd">                .dense(10)</span>
+<span class="sd">                .operator(&#39;LeakyReLU&#39;, negative_slope=0.05)</span>
+<span class="sd">                .build()</span>
+<span class="sd">            )</span>
+
+<span class="sd">        :param oper: the name of the operator or a callable which returns one</span>
+<span class="sd">        :param args: passed to the operator</span>
+<span class="sd">        :param kwargs: passed to the operator</span>
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">oper</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">oper</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;torch.nn has no attribute </span><span class="si">{oper}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">oper</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">oper</span><span class="p">)</span>
+
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">oper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;  {type(mod).__name__}&#39;</span><span class="p">)</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="s1">&#39;oper(*args, **kwargs)&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">)})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span><span class="n">mod</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FluentModule.then"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.then">[docs]</a>    <span class="k">def</span> <span class="nf">then</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Applies a generic torch module transformation. To determine the</span>
+<span class="sd">        output shape, this just runs some data through the module. If the</span>
+<span class="sd">        module is a string then it it is assumed to be the name of an</span>
+<span class="sd">        attribute in torch.nn, and it is initialized with the specified</span>
+<span class="sd">        arguments.</span>
+
+<span class="sd">        :param module: the module that should modify the data</span>
+<span class="sd">        :rtype module: union[nn.Module, str, type]</span>
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">module</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;torch.nn has no attribute </span><span class="si">{module}</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">module</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+            <span class="n">module</span> <span class="o">=</span> <span class="n">module</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">module</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">module</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">output</span><span class="o">=</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">output</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;module killed batch dimension; &#39;</span>
+                                 <span class="o">+</span> <span class="n">f</span><span class="s1">&#39;output shape: </span><span class="si">{output.shape}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="n">new_shape</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+            <span class="n">new_shape</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_wrap</span><span class="p">(</span><span class="n">module</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">new_shape</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;  {type(module).__name__} -&gt; </span><span class="si">{self.shape}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="FluentModule.then_with"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.then_with">[docs]</a>    <span class="k">def</span> <span class="nf">then_with</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dims</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;This applies the given nn.Module or string for an attribute in nn</span>
+<span class="sd">        with the given dimensions passed as inputs. dims should either be a</span>
+<span class="sd">        single number, which is treated like a tuple of a single element, or</span>
+<span class="sd">        a tuple of numbers, which is treated as if each element is (i, num)</span>
+<span class="sd">        where i is the index, or a tuple of (arg_index, num).</span>
+
+<span class="sd">        Our current shape is injected into args such that for each pair</span>
+<span class="sd">        (arg_index, num) in dims, args[arg_index] = self.shape[num]. This</span>
+<span class="sd">        allows for an extremely generic interface for modules which do not have</span>
+<span class="sd">        a dedicated function for them.</span>
+
+<span class="sd">        :Example:</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            from torchluent import FluentModule</span>
+
+<span class="sd">            net = (</span>
+<span class="sd">                FluentModule((1, 7, 7))</span>
+<span class="sd">                .verbose()</span>
+<span class="sd">                .then_with(0, &#39;ConvTranspose2d&#39;, 16,</span>
+<span class="sd">                           kernel_size=2, stride=2, padding=2)</span>
+<span class="sd">                .operator(&#39;LeakyReLU&#39;)</span>
+<span class="sd">                .then_with(0, &#39;ConvTranspose2d&#39;, 32,</span>
+<span class="sd">                           kernel_size=2, stride=2, padding=2)</span>
+<span class="sd">                .operator(&#39;LeakyReLU&#39;)</span>
+<span class="sd">                .then_with(0, &#39;ConvTranspose2d&#39;, 1,</span>
+<span class="sd">                           kernel_size=3, stride=2, padding=2)</span>
+<span class="sd">                .operator(&#39;LeakyReLU&#39;)</span>
+<span class="sd">                .build()</span>
+<span class="sd">            )</span>
+
+
+<span class="sd">        :ivar dims: one of int, tuple[int], and tuple[tuple[int, int]]. each</span>
+<span class="sd">            element is treated as if by (arg_index, num) where num is the</span>
+<span class="sd">            dimension in self.shape that corresponds to args[arg_index]</span>
+<span class="sd">        :ivar mod: either a str (for an attribute in nn) or a callable which</span>
+<span class="sd">            returns a module.</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">dims</span> <span class="o">=</span> <span class="p">(</span><span class="n">dims</span><span class="p">,)</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">dims</span><span class="o">=</span><span class="p">(</span><span class="n">dims</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)))</span>
+        <span class="n">dims</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dims</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dims</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">dims</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">dims</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="s1">&#39;dims[</span><span class="si">{i}</span><span class="s1">]&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">dims</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">)})</span>
+            <span class="n">tus</span><span class="o">.</span><span class="n">check_listlike</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">f</span><span class="s1">&#39;dims[</span><span class="si">{i}</span><span class="s1">]&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">dims</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">int</span><span class="p">,</span> <span class="mi">2</span><span class="p">)})</span>
+            <span class="k">if</span> <span class="n">dims</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;dims[</span><span class="si">{i}</span><span class="s1">][0] = </span><span class="si">{dims[i][0]}</span><span class="s1"> &#39;</span>
+                                 <span class="o">+</span> <span class="s1">&#39;should be nonnegative&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dims</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;dims[</span><span class="si">{i}</span><span class="s1">][0] = </span><span class="si">{dims[i][0]}</span><span class="s1"> requires more &#39;</span>
+                                 <span class="o">+</span> <span class="s1">&#39;arguments than were specified&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">dims</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;dims[</span><span class="si">{i}</span><span class="s1">][1]=</span><span class="si">{dims[i][1]}</span><span class="s1"> is not valid for &#39;</span>
+                                 <span class="o">+</span> <span class="n">f</span><span class="s1">&#39;the current shape </span><span class="si">{self.shape}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">arg_index</span> <span class="k">for</span> <span class="n">arg_index</span><span class="p">,</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">))</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dims</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;arg_index must be unique in dims=</span><span class="si">{dims}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">mod</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;no module </span><span class="si">{mod}</span><span class="s1"> in torch.nn&#39;</span><span class="p">)</span>
+            <span class="n">mod</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">mod</span><span class="p">)</span>
+
+        <span class="n">dims</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">newargs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">newargs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">arg_index</span><span class="p">,</span> <span class="n">shape_index</span> <span class="ow">in</span> <span class="n">dims</span><span class="p">:</span>
+            <span class="n">newargs</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">arg_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">shape_index</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="n">mod</span><span class="p">(</span><span class="o">*</span><span class="n">newargs</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="FluentModule.conv1d"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.conv1d">[docs]</a>    <span class="k">def</span> <span class="nf">conv1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Applies a 1d convolution to the current data. The current shape</span>
+<span class="sd">        should be in the form (channels, length). This accepts all the same</span>
+<span class="sd">        arguments as nn.Conv1d exception for in_channels which it will</span>
+<span class="sd">        calculate from the current shape.</span>
+
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            `torch.nn.Conv1d &lt;https://pytorch.org/docs/stable/nn.html#torch.nn.Conv1d&gt;`_</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cannot perform conv1d on shape </span><span class="si">{self.shape}</span><span class="s1"> - &#39;</span>
+                             <span class="o">+</span> <span class="s1">&#39;expected shape (channels, length)&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">then_with</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Conv1d&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FluentModule.conv2d"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.conv2d">[docs]</a>    <span class="k">def</span> <span class="nf">conv2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Applies a convolution to the current data. The current shape should</span>
+<span class="sd">        be in the form (channels, height, width). This accepts all the same</span>
+<span class="sd">        arguments as nn.Conv2d except for in_channels, which it will calculate</span>
+<span class="sd">        from the current shape.</span>
+
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            `torch.nn.Conv2d &lt;https://pytorch.org/docs/stable/nn.html#torch.nn.Conv2d&gt;`_</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cannot perform conv2d on shape </span><span class="si">{self.shape}</span><span class="s1"> - &#39;</span>
+                             <span class="o">+</span> <span class="s1">&#39;expected shape (channels, height, width)&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">then_with</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Conv2d&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FluentModule.conv3d"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.conv3d">[docs]</a>    <span class="k">def</span> <span class="nf">conv3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Applies a convolution to the current data. The current shape should</span>
+<span class="sd">        be in the form (channels, depth, height, width). This accepts all the same</span>
+<span class="sd">        arguments as nn.Conv3d except for in_channels, which it will calculate</span>
+<span class="sd">        from the current shape.</span>
+
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            `torch.nn.Conv3d &lt;https://pytorch.org/docs/stable/nn.html#torch.nn.Conv3d&gt;`_</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cannot perform conv3d on shape </span><span class="si">{self.shape}</span><span class="s1"> - &#39;</span>
+                             <span class="o">+</span> <span class="s1">&#39;expected shape &#39;</span>
+                             <span class="o">+</span> <span class="s1">&#39;(channels, depth, height, width)&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">then_with</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Conv3d&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FluentModule.maxpool1d"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.maxpool1d">[docs]</a>    <span class="k">def</span> <span class="nf">maxpool1d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The arguments and keyword arguments are identical to MaxPool1d</span>
+
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            `torch.nn.MaxPool1d</span>
+<span class="sd">            &lt;https://pytorch.org/docs/stable/nn.html#torch.nn.MaxPool1d&gt;`_</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cannot perform maxpool1d on shape </span><span class="si">{self.shape}</span><span class="s1"> - &#39;</span>
+                             <span class="o">+</span> <span class="s1">&#39;expected shape (channels, length)&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="s1">&#39;MaxPool1d&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FluentModule.maxpool2d"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.maxpool2d">[docs]</a>    <span class="k">def</span> <span class="nf">maxpool2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The arguments and keyword arguments are identical to MaxPool2d</span>
+
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            `torch.nn.MaxPool2d</span>
+<span class="sd">            &lt;https://pytorch.org/docs/stable/nn.html#torch.nn.MaxPool2d&gt;`_</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cannot perform maxpool2d on shape &#39;</span>
+                             <span class="o">+</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.shape}</span><span class="s1"> - expected shape &#39;</span>
+                             <span class="o">+</span> <span class="s1">&#39;(channels, height, width)&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="s1">&#39;MaxPool2d&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FluentModule.maxpool3d"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.maxpool3d">[docs]</a>    <span class="k">def</span> <span class="nf">maxpool3d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;FluentModule&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;The arguments and keyword arguments are identical to MaxPool3d</span>
+
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            `torch.nn.MaxPool3d</span>
+<span class="sd">            &lt;https://pytorch.org/docs/stable/nn.html#torch.nn.MaxPool3d&gt;`_</span>
+
+<span class="sd">        :returns: self</span>
+<span class="sd">        :rtype: FluentModule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s1">&#39;cannot perform maxpool3d on shape &#39;</span>
+                             <span class="o">+</span> <span class="n">f</span><span class="s1">&#39;</span><span class="si">{self.shape}</span><span class="s1"> - expected shape &#39;</span>
+                             <span class="o">+</span> <span class="s1">&#39;(channels, depth, height, width)&#39;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">then</span><span class="p">(</span><span class="s1">&#39;MaxPool3d&#39;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FluentModule.build"><a class="viewcode-back" href="../../index.html#torchluent.fluent_module.FluentModule.build">[docs]</a>    <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_stripped</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Constructs the actual torch module created through other invocations</span>
+<span class="sd">        to this instance.</span>
+
+<span class="sd">        :param with_stripped: if True, wrap() must have been called and the</span>
+<span class="sd">            output changes to (net, stripped_net).</span>
+<span class="sd">        :type with_stripped: bool</span>
+
+<span class="sd">        :returns: a ready-to-use torch module</span>
+<span class="sd">        :rtype: nn.Module</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tus</span><span class="o">.</span><span class="n">check</span><span class="p">(</span><span class="n">with_stripped</span><span class="o">=</span><span class="p">(</span><span class="n">with_stripped</span><span class="p">,</span> <span class="nb">bool</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">with_stripped</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot strip unless already wrapped&#39;</span><span class="p">)</span>
+
+        <span class="n">res</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sequence</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">with_stripped</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">StrippingModule</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
