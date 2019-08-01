@@ -2,6 +2,10 @@
 
 A small package that provides a fluent interface for creating pytorch models.
 
+## Warning
+
+This package is not complete yet and has not been pushed to pypi yet.
+
 ## Summary
 
 A fluent interface is roughly one where you chain method calls. Read more about
