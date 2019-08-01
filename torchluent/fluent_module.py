@@ -164,8 +164,9 @@ class FluentModule:
 
     :ivar bool wrapped: if we are currently storing a list of hidden states
     """
-    def __init__(self, shape: typing.Tuple[int]):
-        tus.check(shape=(shape, (list, tuple)))
+    def __init__(self, shape: typing.Tuple[int], assume_wrapped: bool = False):
+        tus.check(shape=(shape, (list, tuple)),
+                  assume_wrapped=(assume_wrapped, bool))
         tus.check_listlike(shape=(shape, int, (1, None)))
         for features in shape:
             if features <= 0:
@@ -174,7 +175,7 @@ class FluentModule:
         self.shape = tuple(shape)
         self.sequence = []
         self.is_verbose = False
-        self.wrapped = False
+        self.wrapped = assume_wrapped
 
     def verbose(self) -> 'FluentModule':
         """Turns on verbose mode, which cases this to output every function
