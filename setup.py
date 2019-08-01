@@ -4,7 +4,7 @@ import os
 
 setuptools.setup(
     name='torchluent',
-    version='0.0.1',
+    version='0.0.2',
     author='Timothy Moore',
     author_email='mtimothy984@gmail.com',
     description='Build pytorch models in a fluent interface',
