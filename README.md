@@ -12,8 +12,9 @@ A fluent interface is roughly one where you chain method calls. Read more about
 fluent interfaces [here](https://en.wikipedia.org/wiki/Fluent_interface).
 
 This library allows for dense layers, convolution layers, max pooling,
-batch normalization layers, and nonlinearities. This calculates the new shape
-after each layer, meaning you do not have to redundantly specify features.
+and nonlinearities or other operators (i.e. normalization). This calculates
+the new shape after each layer, meaning you do not have to redundantly
+specify features.
 
 Consider the following pure PyTorch code:
 
@@ -34,6 +35,10 @@ Furthermore, the official PyTorch library does not include some common glue
 code for extensive sequential blocks. One possible reason for this is that
 Fluent API's are unlikely to be as exhaustive as conventional API's so
 one will often have to fall back on the more verbose module definition anyway.
+
+Finally, this has the extremely versatile `then` and `then_with` which
+work for transposed convolution layers and unpooling while still avoiding
+redundant layer sizes or channel numbers.
 
 ## API Reference
 
@@ -60,17 +65,47 @@ keyword arguments.
 ```py
 from torchluent import FluentModule
 
+print('Network:')
 net = (
     FluentModule((1, 28, 28))
-    .conv2d(out_features=32, kernel_size=5)
+    .verbose()
+    .conv2d(32, kernel_size=5)
     .maxpool2d(kernel_size=3)
     .operator('LeakyReLU', negative_slope=0.05)
     .flatten()
     .dense(128)
-    .operator('relu')
+    .operator('ReLU')
     .dense(10)
-    .operator('relu')
+    .operator('ReLU')
     .build()
+)
+
+print(net)
+```
+
+Produces:
+
+```
+Network:
+  (1, 28, 28)
+  Conv2d -> (32, 24, 24)
+  MaxPool2d -> (32, 8, 8)
+  LeakyReLU
+  Reshape -> (2048,)
+  Linear -> (128,)
+  ReLU
+  Linear -> (10,)
+  ReLU
+
+Sequential(
+  (0): Conv2d(1, 32, kernel_size=(5, 5), stride=(1, 1))
+  (1): MaxPool2d(kernel_size=3, stride=3, padding=0, dilation=1, ceil_mode=False)
+  (2): LeakyReLU(negative_slope=0.05)
+  (3): Reshape(2048)
+  (4): Linear(in_features=2048, out_features=128, bias=True)
+  (5): ReLU()
+  (6): Linear(in_features=128, out_features=10, bias=True)
+  (7): ReLU()
 )
 ```
 
@@ -133,28 +168,66 @@ wrapped and unwrapped versions of the network:
 ```py
 from torchluent import FluentModule
 
+print('Network:')
 net, stripped_net = (
-    FluentModule(28*28)
+    FluentModule((28*28,))
+    .verbose()
     .wrap(with_input=True) # create array and initialize with input
     .dense(128)
-    .operator('relu')
+    .operator('ReLU')
     .save_state() # pushes to the array
     .dense(128)
-    .operator('relu')
+    .operator('ReLU')
     .save_state()
     .dense(10)
-    .operator('relu')
+    .operator('ReLU')
     .save_state()
     .build(with_stripped=True)
+)
+print()
+print(net)
+```
+
+Produces
+
+```
+Network:
+  (784,)
+  Linear -> (128,)
+  ReLU
+  Linear -> (128,)
+  ReLU
+  Linear -> (10,)
+  ReLU
+
+Sequential(
+  (0): InitListModule(include_first=True)
+  (1): WrapModule(
+    (child): Linear(in_features=784, out_features=128, bias=True)
+  )
+  (2): WrapModule(
+    (child): ReLU()
+  )
+  (3): SaveStateModule()
+  (4): WrapModule(
+    (child): Linear(in_features=128, out_features=128, bias=True)
+  )
+  (5): WrapModule(
+    (child): ReLU()
+  )
+  (6): SaveStateModule()
+  (7): WrapModule(
+    (child): Linear(in_features=128, out_features=10, bias=True)
+  )
+  (8): WrapModule(
+    (child): ReLU()
+  )
+  (9): SaveStateModule()
 )
 ```
 
 ## Limitations
 
-There are many, many blocks that could be used within a pytorch module. This
-does not have an exhaustive list of these in its Fluent API. It would be
-extremely out of scope for this project to include any significant module
-implementations. Hence any block which is not well agreed upon and with some
-open source implementation will not be visible from the module.
-
-
+For non-trivial networks there will likely be significant usage of the `then`
+and `then_with` functions which aren't quite as nice as the examples shown
+above, but I believe they are still a significant improvement.

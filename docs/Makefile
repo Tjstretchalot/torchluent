@@ -16,7 +16,7 @@ help:
 
 html:
 	mv $(BUILDDIR)/.git tmp
-	rm -r $(BUILDDIR)/
+	rm -r $(BUILDDIR)/*
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 	rm -r $(BUILDDIR)/doctrees
 	mv $(BUILDDIR)/html/* $(BUILDDIR)/

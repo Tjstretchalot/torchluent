@@ -10,7 +10,7 @@ torchluent
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: torchluent
+.. automodule:: torchluent.fluent_module
    :members:
 
 
