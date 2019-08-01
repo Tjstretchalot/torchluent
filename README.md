@@ -31,6 +31,10 @@ code for extensive sequential blocks. One possible reason for this is that
 Fluent API's are unlikely to be as exhaustive as conventional API's so
 one will often have to fall back on the more verbose module definition anyway.
 
+## API Reference
+
+https://tjstretchalot.github.io/torchluent/
+
 ## Usage
 
 Create an instance of `torchluent.FluentModule` with the shape of your input.

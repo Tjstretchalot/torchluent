@@ -15,7 +15,14 @@ help:
 .PHONY: help Makefile
 
 html:
+	mv $(BUILDDIR)/.git tmp
+	rm -r $(BUILDDIR)/
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	rm -r $(BUILDDIR)/doctrees
+	mv $(BUILDDIR)/html/* $(BUILDDIR)/
+	rm -r $(BUILDDIR)/html
+	mv tmp $(BUILDDIR)/.git
+	touch $(BUILDDIR)/.nojekyll
 
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).

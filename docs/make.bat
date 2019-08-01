@@ -25,12 +25,7 @@ if errorlevel 9009 (
 	exit /b 1
 )
 
-rd /q /s "%BUILDDIR%""
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
-rd /q /s "%BUILDDIR%/doctrees"
-move "%BUILDDIR%/html" "../../torchluent-tmp"
-rd /q /s "%BUILDDIR%"
-move "../../torchluent-tmp" "%BUILDDIR%"
 goto end
 
 :help
