@@ -23,24 +23,6 @@ In that article:
 from torchluent import FluentModule
 import torch.nn as nn
 
-def model():
-    return (
-        FluentModule((1, 28, 28))  # features, height, width
-        .verbose()
-        .conv2d(64, 2, padding=1)
-        .operator('ReLU')
-        .maxpool2d(2)
-        .operator('Dropout', 0.3)
-        .conv2d(32, 2, padding=1)
-        .operator('ReLU')
-        .flatten()
-        .dense(256)
-        .operator('ReLU')
-        .operator('Dropout', 0.5)
-        .dense(10)
-        .build()
-    )
-
 class ModelPureTorch(nn.Module):
     def __init__(self):
         super().__init__()
@@ -69,9 +51,29 @@ class ModelPureTorch(nn.Module):
         res = self.linear_10(res)
         return res
 
+def model_torchluent():
+    return (
+        FluentModule((1, 28, 28))  # features, height, width
+        .verbose() # optional
+        .conv2d(64, 2, padding=1)
+        .operator('ReLU')
+        .maxpool2d(2)
+        .operator('Dropout', 0.3)
+        .conv2d(32, 2, padding=1)
+        .operator('ReLU')
+        .flatten()
+        .dense(256)
+        .operator('ReLU')
+        .operator('Dropout', 0.5)
+        .dense(10)
+        # we omit softmax as that's typically part of the loss
+        .build()
+    )
+
+
 
 if __name__ == '__main__':
-    print(model())
-
+    print(model_torchluent())
+    print()
     print()
     print(ModelPureTorch())
