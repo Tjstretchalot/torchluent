@@ -21,6 +21,7 @@ In that article:
     model.summary()
 """
 from torchluent import FluentModule
+import torch.nn as nn
 
 def model():
     return (
@@ -40,5 +41,37 @@ def model():
         .build()
     )
 
+class ModelPureTorch(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv2d_0 = nn.Conv2d(1, 64, 2, padding=1)
+        self.relu_1 = nn.ReLU()
+        self.pool_2 = nn.MaxPool2d(2)
+        self.dropout_3 = nn.Dropout(0.3)
+        self.conv2d_4 = nn.Conv2d(64, 32, 2, padding=1)
+        self.relu_5 = nn.ReLU()
+        self.linear_7 = nn.Linear(7200, 256)
+        self.relu_8 = nn.ReLU()
+        self.dropout_9 = nn.Dropout(0.5)
+        self.linear_10 = nn.Linear(256, 10)
+
+    def forward(self, inp):
+        res = self.conv2d_0(inp)
+        res = self.relu_1(inp)
+        res = self.pool_2(inp)
+        res = self.dropout_3(inp)
+        res = self.conv2d_4(inp)
+        res = self.relu_5(inp)
+        res = res.reshape((7200,))
+        res = self.linear_7(res)
+        res = self.relu_8(res)
+        res = self.dropout_9(res)
+        res = self.linear_10(res)
+        return res
+
+
 if __name__ == '__main__':
     print(model())
+
+    print()
+    print(ModelPureTorch())
